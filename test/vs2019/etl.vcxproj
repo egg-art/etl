@@ -2450,6 +2450,8 @@
     <ClInclude Include="..\..\include\etl\private\diagnostic_pop.h" />
     <ClInclude Include="..\..\include\etl\private\diagnostic_self_assign_overloaded_push.h" />
     <ClInclude Include="..\..\include\etl\private\diagnostic_unused_function_push.h" />
+    <ClInclude Include="..\..\include\etl\private\function_wrapper_cpp03.h" />
+    <ClInclude Include="..\..\include\etl\private\function_wrapper_cpp11.h" />
     <ClInclude Include="..\..\include\etl\pseudo_moving_average.h" />
     <ClInclude Include="..\..\include\etl\delegate.h" />
     <ClInclude Include="..\..\include\etl\delegate_service.h" />
@@ -11383,6 +11385,7 @@
     <ClCompile Include="..\test_crc8_rohc.cpp" />
     <ClCompile Include="..\test_crc8_wcdma.cpp" />
     <ClCompile Include="..\test_function_wrapper.cpp" />
+    <ClCompile Include="..\test_function_wrapper_cpp03.cpp" />
     <ClCompile Include="..\test_message_broker.cpp" />
     <ClCompile Include="..\test_poly_span_dynamic_extent.cpp" />
     <ClCompile Include="..\test_poly_span_fixed_extent.cpp" />

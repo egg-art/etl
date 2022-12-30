@@ -1350,6 +1350,12 @@
     <ClInclude Include="..\..\include\etl\function_wrapper.h">
       <Filter>ETL\Callbacks</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\etl\private\function_wrapper_cpp03.h">
+      <Filter>ETL\Private</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\etl\private\function_wrapper_cpp11.h">
+      <Filter>ETL\Private</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\test_string_char.cpp">
@@ -3399,6 +3405,9 @@
       <Filter>Tests\Sanity Checks\Source</Filter>
     </ClCompile>
     <ClCompile Include="..\test_function_wrapper.cpp">
+      <Filter>Tests\Callbacks &amp; Delegates</Filter>
+    </ClCompile>
+    <ClCompile Include="..\test_function_wrapper_cpp03.cpp">
       <Filter>Tests\Callbacks &amp; Delegates</Filter>
     </ClCompile>
   </ItemGroup>
