@@ -55,7 +55,7 @@
 #include "../utility.h"
 #include "../optional.h"
 
-#if defined(ETL_IN_DELEGATE_CPP03_UNIT_TEST)
+#if defined(ETL_IN_UNIT_TEST)
 namespace etl_cpp03
 #else
 namespace etl

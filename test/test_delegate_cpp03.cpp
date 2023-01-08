@@ -28,8 +28,6 @@ SOFTWARE.
 
 #include "unit_test_framework.h"
 
-#define ETL_IN_DELEGATE_CPP03_UNIT_TEST
-
 #include "etl/private/delegate_cpp03.h"
 #include "etl/vector.h"
 
