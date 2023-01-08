@@ -32,8 +32,6 @@ SOFTWARE.
 
 #include <string>
 
-#include <functional>
-
 namespace
 {
   //*****************************************************************************
