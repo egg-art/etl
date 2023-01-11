@@ -40,6 +40,7 @@ namespace
     Not_Called,
     Member_Return_Parameter_Called,
     Member_Return_Parameter_Alternate_Called,
+    Member_Return_Parameter_Const_Alternate_Called,
     Member_Return_Parameter_Const_Called,
     Member_Parameter_Called,
     Member_Parameter_Alternate_Called,
@@ -55,9 +56,15 @@ namespace
     Functor_Return_Parameter_Const_Called,
     Functor_Return_Called,
     Functor_Return_Const_Called,
+    Functor_Alternate_Return_Parameter_Called,
+    Functor_Alternate_Return_Parameter_Alternate_Called,
+    Functor_Alternate_Return_Parameter_Const_Called,
+    Functor_Alternate_Return_Called,
+    Functor_Alternate_Return_Const_Called,
     Lambda_Return_Parameter_Called,
     Lambda_Return_Parameter_Alternate_Called,
     Lambda_Return_Called,
+    Lambda_Return_Alternate_Called,
     Static_Return_Parameter_Called,
     Static_Return_Parameter_Alternate_Called,
     Static_Parameter_Called,
@@ -234,6 +241,18 @@ namespace
 
       function_called = FunctionCalled::Member_Return_Parameter_Const_Called;
       text_called     = m.text;
+
+      return i_;
+    }
+
+    //***********************************
+    int MemberReturnParameterConstAlternate(int i_, Moveable&& m_) const
+    {
+      i = i_;
+      m = std::move(m_);
+
+      function_called = FunctionCalled::Member_Return_Parameter_Const_Alternate_Called;
+      text_called = m.text;
 
       return i_;
     }
@@ -456,6 +475,63 @@ namespace
   };
 
   //***************************************************************************
+  struct FunctorAlternate
+  {
+    //***********************************
+    FunctorAlternate()
+      : i(0)
+      , m("Not_Called")
+    {
+    }
+
+    //***********************************
+    FunctorAlternate(const FunctorAlternate& other)
+      : i(other.i)
+      , m(std::move(other.m))
+    {
+    }
+
+    //***********************************
+    int operator()(int i_, Moveable&& m_)
+    {
+      function_called = FunctionCalled::Functor_Alternate_Return_Parameter_Called;
+      text_called = "Functor_Alternate_Return_Parameter_Called";
+
+      return i_;
+    }
+
+    //***********************************
+    int operator()(int i_, Moveable&& m_) const
+    {
+      function_called = FunctionCalled::Functor_Alternate_Return_Parameter_Const_Called;
+      text_called = "Functor_Alternate_Return_Parameter_Const_Called";
+
+      return i_;
+    }
+
+    //***********************************
+    int operator()()
+    {
+      function_called = FunctionCalled::Functor_Alternate_Return_Called;
+      text_called = "Functor_Alternate_Return_Called";
+
+      return 0;
+    }
+
+    //***********************************
+    int operator()() const
+    {
+      function_called = FunctionCalled::Functor_Alternate_Return_Const_Called;
+      text_called = "Functor_Alternate_Return_Const_Called";
+
+      return 1;
+    }
+
+    mutable int i;
+    mutable Moveable m;
+  };
+
+  //***************************************************************************
   struct FunctorConstexpr
   {
     //***********************************
@@ -562,6 +638,23 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_static_return_parameter_assign_from_function)
+    {
+      etl::function_wrapper<int(int, Moveable&&)> func(StaticReturnParameterFunction);
+      int result = func(1, Moveable("Static_Return_Parameter_Called"));
+      CHECK_EQUAL(1, result); // Use the result.
+      
+      func = StaticReturnParameterFunctionAlternate;
+      result = func(1, Moveable("Static_Return_Parameter_Alternate_Called"));
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Static_Return_Parameter_Alternate_Called);
+      CHECK_EQUAL(1, result);
+      CHECK_EQUAL("Static_Return_Parameter_Alternate_Called", text_called);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_static_return_parameter_call_if)
     {
       etl::function_wrapper<int(int, Moveable&&)> func(StaticReturnParameterFunction);
@@ -644,6 +737,22 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_static_parameter_assign_from_function)
+    {
+      etl::function_wrapper<void(int, Moveable&&)> func(StaticParameterFunction);
+      func(1, Moveable("Static_Parameter_Called"));
+      CHECK_TRUE(func.is_valid()); // Use it.
+
+      func = StaticParameterFunctionAlternate;
+      func(1, Moveable("Static_Parameter_Alternate_Called"));
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Static_Parameter_Alternate_Called);
+      CHECK_EQUAL("Static_Parameter_Alternate_Called", text_called);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_static_parameter_call_if)
     {
       etl::function_wrapper<void(int, Moveable&&)> func(StaticParameterFunction);
@@ -719,6 +828,23 @@ namespace
       CHECK_EQUAL(1, result);
       CHECK_TRUE(function_called == FunctionCalled::Static_Return_Called);
       CHECK_EQUAL("Static_Return_Called", text_called);
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_static_return_assign_from_function)
+    {
+      etl::function_wrapper<int(void)> func(StaticReturnFunction);
+      int result = func();
+      CHECK_EQUAL(1, result); // Use the result.
+
+      func = StaticReturnFunctionAlternate;
+      result = func();
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Static_Return_Alternate_Called);
+      CHECK_EQUAL(1, result);
+      CHECK_EQUAL("Static_Return_Alternate_Called", text_called);
     }
 
     //*************************************************************************
@@ -799,6 +925,22 @@ namespace
       CHECK_TRUE(func);
       CHECK_TRUE(function_called == FunctionCalled::Static_Called);
       CHECK_EQUAL("Static_Called", text_called);
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_static_assign_from_function)
+    {
+      etl::function_wrapper<void(void)> func(StaticFunction);
+      func();
+      CHECK_TRUE(func.is_valid()); // Use it.
+
+      func = StaticFunctionAlternate;
+      func();
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Static_Alternate_Called);
+      CHECK_EQUAL("Static_Alternate_Called", text_called);
     }
 
     //*************************************************************************
@@ -900,6 +1042,37 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_lambda_return_parameter_assignment_from_lambda)
+    {
+      auto lambda = [](int i_, Moveable&& m_)
+      {
+        function_called = FunctionCalled::Lambda_Return_Parameter_Called;
+        text_called = m_.text;
+        return i_;
+      };
+
+      auto lambdaAlternate = [](int i_, Moveable&& m_)
+      {
+        function_called = FunctionCalled::Lambda_Return_Parameter_Alternate_Called;
+        text_called = m_.text;
+        return i_;
+      };
+
+      etl::function_wrapper<int(int, Moveable&&)> func(lambda);
+      int result = func(1, Moveable("Lambda_Return_Parameter_Called"));
+      CHECK_TRUE(func.is_valid());
+
+      func = lambdaAlternate;
+      result = func(1, Moveable("Lambda_Return_Parameter_Alternate_Called"));
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Lambda_Return_Parameter_Alternate_Called);
+      CHECK_EQUAL("Lambda_Return_Parameter_Alternate_Called", text_called);
+      CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_lambda_return_parameter_constexpr)
     {
       static constexpr auto lambda = [](int i_)
@@ -934,6 +1107,37 @@ namespace
       CHECK_TRUE(function_called == FunctionCalled::Lambda_Return_Called);
       CHECK_EQUAL("Lambda_Return_Called", text_called);
       CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_lambda_assignment_from_lambda)
+    {
+      auto lambda = []()
+      {
+        function_called = FunctionCalled::Lambda_Return_Called;
+        text_called = "Lambda_Return_Called";
+        return 1;
+      };
+
+      auto lambdaAlternate = []()
+      {
+        function_called = FunctionCalled::Lambda_Return_Alternate_Called;
+        text_called = "Lambda_Return_Alternate_Called";
+        return 2;
+      };
+
+      etl::function_wrapper<int(void)> func(lambda);
+      int result = func();
+      CHECK_TRUE(func.is_valid());
+
+      func = lambdaAlternate;
+      result = func();
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Lambda_Return_Alternate_Called);
+      CHECK_EQUAL("Lambda_Return_Alternate_Called", text_called);
+      CHECK_EQUAL(2, result);
     }
 
     //*************************************************************************
@@ -1067,6 +1271,44 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_functor_return_parameter_assignment_from_functor)
+    {
+      Functor functor;
+      FunctorAlternate functorAlternate;
+
+      etl::function_wrapper<int(int, Moveable&&)> func(functor);
+      int result = func(1, Moveable("Functor_Return_Parameter_Called"));
+      CHECK_TRUE(func.is_valid());
+      
+      func = functorAlternate;
+      result = func(1, Moveable("Functor_Alternate_Return_Parameter_Called"));
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Functor_Alternate_Return_Parameter_Called);
+      CHECK_EQUAL("Functor_Alternate_Return_Parameter_Called", text_called);
+      CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_functor_return_parameter_assignment_from_const_functor)
+    {
+      const Functor functor;
+      const FunctorAlternate functorAlternate;
+
+      etl::function_wrapper<int(int, Moveable&&)> func(functor);
+      int result = func(1, Moveable("Functor_Return_Parameter_Const_Called"));
+      CHECK_TRUE(func.is_valid());
+
+      func = functorAlternate;
+      result = func(1, Moveable("Functor_Alternate_Return_Parameter_Const_Called"));
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Functor_Alternate_Return_Parameter_Const_Called);
+      CHECK_EQUAL("Functor_Alternate_Return_Parameter_Const_Called", text_called);
+      CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_functor_return)
     {
       Functor functor;
@@ -1090,6 +1332,25 @@ namespace
       CHECK_TRUE(func.is_valid());
       CHECK_TRUE(func);
       CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_functor_return_assignment_from_functor)
+    {
+      Functor functor;
+      FunctorAlternate functorAlternate;
+
+      etl::function_wrapper<int(void)> func(functor);
+      int result = func();
+      CHECK_TRUE(func.is_valid());
+
+      func = functorAlternate;
+      result = func();
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Functor_Alternate_Return_Called);
+      CHECK_EQUAL("Functor_Alternate_Return_Called", text_called);
+      CHECK_EQUAL(0, result);
     }
 
     //*************************************************************************
@@ -1263,6 +1524,25 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_member_return_parameter_assignment_from_member_function)
+    {
+      TestClass testClass;
+
+      etl::function_wrapper<int(TestClass&, int, Moveable&&)> func(&TestClass::MemberReturnParameter);
+      int result = func(testClass, 1, Moveable("Member_Return_Parameter_Called"));
+      CHECK_EQUAL(1, result); // Use it.
+
+      func = &TestClass::MemberReturnParameterAlternate;
+      result = func(testClass, 1, Moveable("Member_Return_Parameter_Alternate_Called"));
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Member_Return_Parameter_Alternate_Called);
+      CHECK_EQUAL("Member_Return_Parameter_Alternate_Called", text_called);
+      CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_member_return_parameter_call_if)
     {
       TestClass testClass;
@@ -1356,6 +1636,25 @@ namespace
     }
 
     //*************************************************************************
+    TEST_FIXTURE(SetupFixture, test_member_return_parameter_const_assignment_from_member_function)
+    {
+      TestClass testClass;
+
+      etl::function_wrapper<int(const TestClass&, int, Moveable&&)> func(&TestClass::MemberReturnParameterConst);
+      int result = func(testClass, 1, Moveable("Member_Return_Parameter_Called"));
+      CHECK_EQUAL(1, result); // Use it.
+
+      func = &TestClass::MemberReturnParameterConstAlternate;
+      result = func(testClass, 1, Moveable("Member_Return_Parameter_Const_Alternate_Called"));
+
+      CHECK_TRUE(func.is_valid());
+      CHECK_TRUE(func);
+      CHECK_TRUE(function_called == FunctionCalled::Member_Return_Parameter_Const_Alternate_Called);
+      CHECK_EQUAL("Member_Return_Parameter_Const_Alternate_Called", text_called);
+      CHECK_EQUAL(1, result);
+    }
+
+    //*************************************************************************
     TEST_FIXTURE(SetupFixture, test_member_return_parameter_const_call_if)
     {
       TestClass testClass;
@@ -1418,6 +1717,8 @@ namespace
 
       etl::function_wrapper<int(TestClass&, int, Moveable&&)> func1 = &TestClass::MemberReturnParameter;
       etl::function_wrapper<int(TestClass&, int, Moveable&&)> func2 = &TestClass::MemberReturnParameterAlternate;
+
+      func1(testClass, 1, Moveable("Member_Return_Parameter_Called"));
 
       func2 = func1;
 

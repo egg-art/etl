@@ -95,31 +95,36 @@ namespace etl
     //*************************************************************************
     /// Default constructor
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper() = default;
+    ETL_CONSTEXPR14 
+    function_wrapper() = default;
 
     //*************************************************************************
     /// Copy constructor
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper(const function_wrapper& other) = default;
+    ETL_CONSTEXPR14 
+    function_wrapper(const function_wrapper& other) = default;
 
     //*************************************************************************
     /// Assignment
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper& operator =(const function_wrapper& other) = default;
+    ETL_CONSTEXPR14 
+    function_wrapper& operator =(const function_wrapper& other) = default;
 
     //*************************************************************************
     /// Create from function.
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper(function_type function_)
+    ETL_CONSTEXPR14 
+    function_wrapper(function_type function_)
       : invocation(function_, function_stub)
     {
     }
 
     //*************************************************************************
-    /// Create from a const lambda or functor.
+    /// Create from a lambda or functor.
     //*************************************************************************
     template <typename TLambda, typename = etl::enable_if_t<etl::is_class<TLambda>::value && !etl::is_same<this_type, TLambda>::value, void>>
-    ETL_CONSTEXPR14 function_wrapper(TLambda& instance_)
+    ETL_CONSTEXPR14 
+    function_wrapper(TLambda& instance_)
       : invocation((void*)(&instance_), lambda_stub<TLambda>)
     {
     }
@@ -128,9 +133,48 @@ namespace etl
     /// Create from a const lambda or functor.
     //*************************************************************************
     template <typename TLambda, typename = etl::enable_if_t<etl::is_class<TLambda>::value && !etl::is_same<this_type, TLambda>::value, void>>
-    ETL_CONSTEXPR14 function_wrapper(const TLambda& instance_)
+    ETL_CONSTEXPR14 
+    function_wrapper(const TLambda& instance_)
       : invocation((void*)(&instance_), const_lambda_stub<TLambda>)
     {
+    }
+
+    //*************************************************************************
+    /// Assign from function.
+    //*************************************************************************
+    ETL_CONSTEXPR14 
+    function_wrapper& operator =(function_type function_)
+    {
+      invocation.alternate.func = function_;
+      invocation.stub           = function_stub;
+
+      return *this;
+    }
+
+    //*************************************************************************
+    /// Assign from a lambda or functor.
+    //*************************************************************************
+    template <typename TLambda, typename = etl::enable_if_t<etl::is_class<TLambda>::value && !etl::is_same<this_type, TLambda>::value, void>>
+    ETL_CONSTEXPR14
+    function_wrapper& operator =(TLambda& instance_)
+    {
+      invocation.alternate.object = (void*)(&instance_);
+      invocation.stub             = lambda_stub<TLambda>;
+
+      return *this;
+    }
+
+    //*************************************************************************
+    /// Assign from a const lambda or functor.
+    //*************************************************************************
+    template <typename TLambda, typename = etl::enable_if_t<etl::is_class<TLambda>::value && !etl::is_same<this_type, TLambda>::value, void>>
+    ETL_CONSTEXPR14
+    function_wrapper& operator =(const TLambda& instance_)
+    {
+      invocation.alternate.object = (void*)(&instance_);
+      invocation.stub             = const_lambda_stub<TLambda>;
+
+      return *this;
     }
 
     //*************************************************************************
@@ -307,7 +351,8 @@ namespace etl
     //*************************************************************************
     /// Stub call for a free function.
     //*************************************************************************
-    static ETL_CONSTEXPR14 TReturn function_stub(const invocation_element& invocation, TParameters... params)
+    static ETL_CONSTEXPR14 
+    TReturn function_stub(const invocation_element& invocation, TParameters... params)
     {
       return (*invocation.alternate.func)(etl::forward<TParameters>(params)...);
     }
@@ -316,7 +361,8 @@ namespace etl
     /// Stub call for a lambda or functor.
     //*************************************************************************
     template <typename TLambda>
-    static ETL_CONSTEXPR14 TReturn lambda_stub(const invocation_element& invocation, TParameters... params)
+    static ETL_CONSTEXPR14 
+    TReturn lambda_stub(const invocation_element& invocation, TParameters... params)
     {
       TLambda* p = static_cast<TLambda*>(invocation.alternate.object);
       return (p->operator())(etl::forward<TParameters>(params)...);
@@ -326,7 +372,8 @@ namespace etl
     /// Stub call for a lambda or functor.
     //*************************************************************************
     template <typename TLambda>
-    static ETL_CONSTEXPR14 TReturn const_lambda_stub(const invocation_element& invocation, TParameters... params)
+    static ETL_CONSTEXPR14 
+    TReturn const_lambda_stub(const invocation_element& invocation, TParameters... params)
     {
       const TLambda* p = static_cast<const TLambda*>(invocation.alternate.object);
       return (p->operator())(etl::forward<TParameters>(params)...);
@@ -372,6 +419,18 @@ namespace etl
     function_wrapper(function_type method_)
       : invocation(method_, method_stub)
     {
+    }
+
+    //*************************************************************************
+    /// Assign from method
+    //*************************************************************************
+    ETL_CONSTEXPR14
+    function_wrapper& operator =(function_type method_)
+    {
+      invocation.method = method_;
+      invocation.stub   = method_stub;
+
+      return *this;
     }
 
     //*************************************************************************
@@ -518,7 +577,8 @@ namespace etl
     //*************************************************************************
     /// Stub call for a member function.
     //*************************************************************************
-    static ETL_CONSTEXPR14 TReturn method_stub(TObject& object, function_type method, TParameters... params)
+    static ETL_CONSTEXPR14 
+    TReturn method_stub(TObject& object, function_type method, TParameters... params)
     {
       return (object.*method)(etl::forward<TParameters>(params)...);
     }
@@ -542,24 +602,40 @@ namespace etl
     //*************************************************************************
     /// Default constructor
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper() = default;
+    ETL_CONSTEXPR14 
+    function_wrapper() = default;
 
     //*************************************************************************
     /// Copy constructor
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper(const function_wrapper& other) = default;
+    ETL_CONSTEXPR14
+    function_wrapper(const function_wrapper& other) = default;
 
     //*************************************************************************
     /// Assignment
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper& operator =(const function_wrapper& other) = default;
+    ETL_CONSTEXPR14 
+    function_wrapper& operator =(const function_wrapper& other) = default;
 
     //*************************************************************************
     /// Construct from method
     //*************************************************************************
-    ETL_CONSTEXPR14 function_wrapper(function_type method_)
+    ETL_CONSTEXPR14 
+    function_wrapper(function_type method_)
       : invocation(method_, method_stub)
     {
+    }
+
+    //*************************************************************************
+    /// Assign from method
+    //*************************************************************************
+    ETL_CONSTEXPR14
+    function_wrapper& operator =(function_type method_)
+    {
+      invocation.method = method_;
+      invocation.stub   = method_stub;
+
+      return *this;
     }
 
     //*************************************************************************
@@ -586,7 +662,8 @@ namespace etl
     /// Equality operator
     //*************************************************************************
     ETL_NODISCARD
-    ETL_CONSTEXPR14 bool operator ==(const function_wrapper& rhs) const
+    ETL_CONSTEXPR14 
+    bool operator ==(const function_wrapper& rhs) const
     {
       return invocation == rhs.invocation;
     }
@@ -595,7 +672,8 @@ namespace etl
     /// Inequality operator
     //*************************************************************************
     ETL_NODISCARD
-    ETL_CONSTEXPR14 bool operator !=(const function_wrapper& rhs) const
+    ETL_CONSTEXPR14 
+    bool operator !=(const function_wrapper& rhs) const
     {
       return invocation != rhs.invocation;
     }
@@ -704,7 +782,8 @@ namespace etl
     //*************************************************************************
     /// Stub call for a const member function.
     //*************************************************************************
-    static ETL_CONSTEXPR14 TReturn method_stub(const TObject& object, function_type method, TParameters... params)
+    static ETL_CONSTEXPR14 
+    TReturn method_stub(const TObject& object, function_type method, TParameters... params)
     {
       return (object.*method)(etl::forward<TParameters>(params)...);
     }
