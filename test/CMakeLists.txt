@@ -59,6 +59,7 @@ add_executable(etl_tests
 	test_crc16_en13757.cpp
 	test_crc16_genibus.cpp
 	test_crc16_kermit.cpp
+	test_crc16_m17.cpp
 	test_crc16_maxim.cpp
 	test_crc16_mcrf4xx.cpp
 	test_crc16_modbus.cpp
@@ -102,6 +103,7 @@ add_executable(etl_tests
 	test_error_handler.cpp
 	test_etl_traits.cpp
 	test_exception.cpp
+	test_expected.cpp
 	test_fixed_iterator.cpp
 	test_fixed_sized_memory_block_allocator.cpp
 	test_flags.cpp
