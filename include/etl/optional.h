@@ -280,7 +280,7 @@ namespace etl
       ETL_ASSERT(has_value(), ETL_ERROR(optional_invalid));
 #endif
 
-      return &storage.value;
+      return &storage.u.value;
     }
 
     //***************************************************************************
@@ -293,7 +293,7 @@ namespace etl
       ETL_ASSERT(has_value(), ETL_ERROR(optional_invalid));
 #endif
 
-      return &storage.value;
+      return &storage.u.value;
     }
 
     //***************************************************************************
@@ -306,7 +306,7 @@ namespace etl
       ETL_ASSERT(has_value(), ETL_ERROR(optional_invalid));
 #endif
 
-      return storage.value;
+      return storage.u.value;
     }
 
     //***************************************************************************
@@ -319,7 +319,7 @@ namespace etl
       ETL_ASSERT(has_value(), ETL_ERROR(optional_invalid));
 #endif
 
-      return storage.value;
+      return storage.u.value;
     }
 
     //***************************************************************************
@@ -420,7 +420,10 @@ namespace etl
         storage.destroy();
       }
 
-      ::new (&storage.value) T(value1);
+      T* p = ::new (&storage.u.value) T(value1);
+      storage.valid = true;
+
+      return *p;
     }
 
     //*************************************************************************
@@ -436,7 +439,10 @@ namespace etl
         storage.destroy();
       }
 
-      ::new (&storage.value) T(value1, value2);
+      T* p = ::new (&storage.u.value) T(value1, value2);
+      storage.valid = true;
+
+      return *p;
     }
 
     //*************************************************************************
@@ -452,7 +458,10 @@ namespace etl
         storage.destroy();
       }
 
-      ::new (&storage.value) T(value1, value2, value3);
+      T* p = ::new (&storage.u.value) T(value1, value2, value3);
+      storage.valid = true;
+
+      return *p;
     }
 
     //*************************************************************************
@@ -468,7 +477,10 @@ namespace etl
         storage.destroy();
       }
 
-      ::new (&storage.value) T(value1, value2, value3, value4);
+      T* p = ::new (&storage.u.value) T(value1, value2, value3, value4);
+      storage.valid = true;
+
+      return *p;
     }
 #endif
 
@@ -482,7 +494,6 @@ namespace etl
         : u()
         , valid(false)
       {
-        u.dummy = 0;
       }
 
       //*******************************
@@ -933,18 +944,20 @@ namespace etl
   template <typename T>
   ETL_CONSTEXPR14 bool operator <=(const etl::optional<T>& lhs, const etl::optional<T>& rhs)
   {
-    if (!lhs.has_value())
-    {
-      return true;
-    }
-    else if (!rhs.has_value())
-    {
-      return false;
-    }
-    else
-    {
-      return lhs.value() <= rhs.value();
-    }
+    return !(rhs < lhs);
+
+    //if (!lhs.has_value())
+    //{
+    //  return true;
+    //}
+    //else if (!rhs.has_value())
+    //{
+    //  return false;
+    //}
+    //else
+    //{
+    //  return lhs.value() <= rhs.value();
+    //}
   }
 
   //***************************************************************************
@@ -953,18 +966,20 @@ namespace etl
   template <typename T>
   ETL_CONSTEXPR14 bool operator >(const etl::optional<T>& lhs, const etl::optional<T>& rhs)
   {
-      if (!lhs.has_value())
-      {
-        return false;
-      }
-      else if (!rhs.has_value())
-      {
-        return true;
-      }
-      else
-      {
-        return lhs.value() > rhs.value();
-      }
+    return (rhs < lhs);
+
+    //if (!lhs.has_value())
+    //{
+    //  return false;
+    //}
+    //else if (!rhs.has_value())
+    //{
+    //  return true;
+    //}
+    //else
+    //{
+    //  return lhs.value() > rhs.value();
+    //}
   }
 
   //***************************************************************************
@@ -973,18 +988,20 @@ namespace etl
   template <typename T>
   ETL_CONSTEXPR14 bool operator >=(const etl::optional<T>& lhs, const etl::optional<T>& rhs)
   {
-    if (!rhs.has_value())
-    {
-      return true;
-    }
-    else if (!lhs.has_value())
-    {
-      return false;
-    }
-    else
-    {
-      return lhs.value() >= rhs.value();
-    }
+    return !(lhs < rhs);
+    
+    //if (!rhs.has_value())
+    //{
+    //  return true;
+    //}
+    //else if (!lhs.has_value())
+    //{
+    //  return false;
+    //}
+    //else
+    //{
+    //  return lhs.value() >= rhs.value();
+    //}
   }
 
   //***************************************************************************
